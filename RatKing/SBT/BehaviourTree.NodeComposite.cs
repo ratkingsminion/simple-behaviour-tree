@@ -138,7 +138,6 @@ namespace RatKing.SBT {
 			}
 
 			internal override void OnChildReport(Node child) {
-				//UnityEngine.Debug.Log(child.name + " name returns " + child.curStatus);
 				switch (child.curStatus) {
 					case TaskStatus.Success:
 						++curSuccess;
@@ -162,7 +161,6 @@ namespace RatKing.SBT {
 				: base(tree, name ?? "race") { }
 
 			protected override void OnStart() {
-				//Debug.Log("START RACE " + name);
 				curStatus = TaskStatus.Running;
 				curFail = 0;
 				for (var i = childCount - 1; i >= 0; --i) {
@@ -171,7 +169,6 @@ namespace RatKing.SBT {
 			}
 
 			internal override void OnChildReport(Node child) {
-				//Debug.Log("CHILD REPORT RACE " + name + " " + child.curStatus);
 				switch (child.curStatus) {
 					case TaskStatus.Success:
 						curStatus = TaskStatus.Success;
