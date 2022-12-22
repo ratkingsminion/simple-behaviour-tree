@@ -30,10 +30,7 @@ Usage (Unity):
               go => targetPos = go.transform.position + targetDirections[targetDirIdx = (targetDirIdx + 1) % 4],
               go => {
                 go.transform.position = Vector3.Lerp(go.transform.position, targetPos, (float)tree.DeltaTime * 5f);
-                if (Vector3.Distance(go.transform.position, targetPos) < 0.01f) {
-                  go.transform.position = targetPos;
-                  return true;
-                }
+                if (Vector3.Distance(go.transform.position, targetPos) < 0.01f) { go.transform.position = targetPos; return true; }
                 return false;
               })
             .Wait(0.4)
