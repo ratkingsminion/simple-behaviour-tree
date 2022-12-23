@@ -29,8 +29,8 @@ Usage (Unity):
           .Do("walk to target pos",
             go => targetPos = go.transform.position + targetDirections[targetDirIdx = (targetDirIdx + 1) % 4],
             go => {
-              go.transform.position = Vector3.Lerp(go.transform.position, targetPos, (float)tree.DeltaTime * 5f);
-              if (Vector3.Distance(go.transform.position, targetPos) < 0.01f) { go.transform.position = targetPos; return Status.Success; }
+              go.transform.position = Vector3.Lerp(go.transform.position, targetPos, sbtTest.DeltaTime * 5f);
+              if ((go.transform.position - targetPos).magnitude < 0.01f) { go.transform.position = targetPos; return Status.Success; }
               return Status.Running; })
           .Wait(0.4)
         .End()
