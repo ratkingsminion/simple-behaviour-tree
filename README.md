@@ -30,9 +30,8 @@ Usage (Unity):
               go => targetPos = go.transform.position + targetDirections[targetDirIdx = (targetDirIdx + 1) % 4],
               go => {
                 go.transform.position = Vector3.Lerp(go.transform.position, targetPos, (float)tree.DeltaTime * 5f);
-                if (Vector3.Distance(go.transform.position, targetPos) < 0.01f) { go.transform.position = targetPos; return true; }
-                return false;
-              })
+                if (Vector3.Distance(go.transform.position, targetPos) < 0.01f) { go.transform.position = targetPos; return Status.Success; }
+                return Status.Running; })
             .Wait(0.4)
           .End()
         .End();
@@ -58,7 +57,7 @@ Have a look at Example/BehaviourTree.NodePrint.cs to see how to add your own act
 
 ## Action Nodes
 
-* Do - Execute a generic action; if you provide a start action, it's assumed the standard status is TaskStatus.Running instead of TaskStatus.Success
+* Do - Execute a generic action; if you provide a start action, it's assumed the standard status is Status.Running instead of Status.Success
 * Fail - Directly fail
 * Success - Directly succeed
 * Wait - Wait X seconds; depends on what deltaTime you provide as argument for Tick()
@@ -75,7 +74,7 @@ Composite nodes always need a call to End() in the hierarchy (see above).
 
 ## Decorator Nodes
 
-* Invert - Invert the child's TaskStatus, if it's not running
-* Override - Override the child's TaskStatus, if it's not running
-* Repeat - Repeat the child until it returns TaskStatus.Fail
-* Retry - Repeat the child until it returns TaskStatus.Success
+* Invert - Invert the child's Status, if it's not running
+* Override - Override the child's Status, if it's not running
+* Repeat - Repeat the child until its curStatus is Status.Fail
+* Retry - Repeat the child until its curStatus is Status.Success
