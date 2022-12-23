@@ -4,31 +4,31 @@ namespace RatKing.SBT {
 
 	public partial class BehaviourTree<T> {
 		/// <summary>
-		/// Invert the child's TaskStatus, if it's not running
+		/// Invert the child's Status, if it's not running
 		/// </summary>
 		public BehaviourTree<T> Invert(string name = null)
 			=> Register(new NodeDecoratorInvert(this, name));
 		
 		/// <summary>
-		/// Override the child's TaskStatus, if it's not running
+		/// Override the child's Status, if it's not running
 		/// </summary>
-		public BehaviourTree<T> Override(TaskStatus status = TaskStatus.Success)
+		public BehaviourTree<T> Override(Status status = Status.Success)
 			=> Register(new NodeDecoratorOverride(this, null, status));
 		
 		/// <summary>
-		/// Override the child's TaskStatus, if it's not running
+		/// Override the child's Status, if it's not running
 		/// </summary>
-		public BehaviourTree<T> Override(string name, TaskStatus status = TaskStatus.Success)
+		public BehaviourTree<T> Override(string name, Status status = Status.Success)
 			=> Register(new NodeDecoratorOverride(this, name, status));
 		
 		/// <summary>
-		/// Repeat the child until it returns TaskStatus.Fail
+		/// Repeat the child until it returns Status.Fail
 		/// </summary>
 		public BehaviourTree<T> Repeat(string name = null)
 			=> Register(new NodeDecoratorRepeat(this, name));
 
 		/// <summary>
-		/// Repeat the child until it returns TaskStatus.Success
+		/// Repeat the child until it returns Status.Success
 		/// </summary>
 		public BehaviourTree<T> Retry(string name = null)
 			=> Register(new NodeDecoratorRetry(this, name));
@@ -43,7 +43,7 @@ namespace RatKing.SBT {
 				: base(tree, name) { }
 
 			protected override void OnStart() {
-				tree.processNodes.Add(child);
+				tree.TickNode(child);
 			}
 			
 			internal override void OnRemove() {
@@ -52,8 +52,8 @@ namespace RatKing.SBT {
 		}
 
 		/// <summary>
-		/// INVERT returns TaskStatus.Success if its child returns TaskStatus.Fail, and vice versa,
-		/// but it keeps the TaskStatus.Running status
+		/// INVERT returns Status.Success if its child returns Status.Fail, and vice versa,
+		/// but it keeps the Status.Running status
 		/// </summary>
 		class NodeDecoratorInvert : NodeDecorator {
 			public NodeDecoratorInvert(BehaviourTree<T> tree, string name)
@@ -61,23 +61,23 @@ namespace RatKing.SBT {
 
 			internal override void OnChildReport(Node child) {
 				curStatus = child.curStatus switch {
-					TaskStatus.Success => TaskStatus.Fail,
-					TaskStatus.Fail => TaskStatus.Success,
+					Status.Success => Status.Fail,
+					Status.Fail => Status.Success,
 					_ => child.curStatus,
 				};
 			}
 		}
 
 		/// <summary>
-		/// OVERRIDE returns the specified TaskStatus, as long as its child doesn't return TaskStatus.Running
+		/// OVERRIDE returns the specified Status, as long as its child doesn't return Status.Running
 		/// </summary>
 		class NodeDecoratorOverride : NodeDecorator {
-			protected TaskStatus fixedStatus;
+			protected Status fixedStatus;
 
 			public NodeDecoratorOverride(BehaviourTree<T> tree, string name)
 				: base(tree, name ?? "override") { }
 
-			internal NodeDecoratorOverride(BehaviourTree<T> tree, string name, TaskStatus status)
+			internal NodeDecoratorOverride(BehaviourTree<T> tree, string name, Status status)
 				: base(tree, name ?? "override")
 				=> fixedStatus = status;
 
@@ -88,47 +88,47 @@ namespace RatKing.SBT {
 			}
 
 			internal override void OnChildReport(Node child) {
-				curStatus = child.curStatus == TaskStatus.Running ? TaskStatus.Running : fixedStatus;
+				curStatus = child.curStatus == Status.Running ? Status.Running : fixedStatus;
 			}
 		}
 
 		/// <summary>
-		/// REPEAT is running as long as its child doesn't return TaskStatus.Fail
+		/// REPEAT is running as long as its child doesn't return Status.Fail
 		/// </summary>
 		class NodeDecoratorRepeat : NodeDecorator {
 			public NodeDecoratorRepeat(BehaviourTree<T> tree, string name)
 				: base(tree, name ?? "repeat") { }
 
 			protected override void OnStart() {
-				curStatus = TaskStatus.Running;
+				curStatus = Status.Running;
 			}
 
 			protected override void OnTick() {
-				if (child.curStatus != TaskStatus.Running) { tree.processNodes.Add(child); }
+				if (child.curStatus != Status.Running) { tree.TickNode(child); }
 			}
 
 			internal override void OnChildReport(Node child) {
-				if (child.curStatus == TaskStatus.Fail) { curStatus = TaskStatus.Fail; }
+				if (child.curStatus == Status.Fail) { curStatus = Status.Fail; }
 			}
 		}
 
 		/// <summary>
-		/// RETRY is running as long as its child doesn't return TaskStatus.Success
+		/// RETRY is running as long as its child doesn't return Status.Success
 		/// </summary>
 		class NodeDecoratorRetry: NodeDecorator {
 			public NodeDecoratorRetry(BehaviourTree<T> tree, string name)
 				: base(tree, name ?? "retry") { }
 
 			protected override void OnStart() {
-				curStatus = TaskStatus.Running;
+				curStatus = Status.Running;
 			}
 
 			protected override void OnTick() {
-				if (child.curStatus != TaskStatus.Running) { tree.processNodes.Add(child); }
+				if (child.curStatus != Status.Running) { tree.TickNode(child); }
 			}
 
 			internal override void OnChildReport(Node child) {
-				if (child.curStatus == TaskStatus.Success) { curStatus = TaskStatus.Success; }
+				if (child.curStatus == Status.Success) { curStatus = Status.Success; }
 			}
 		}
 	}

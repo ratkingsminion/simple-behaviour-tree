@@ -59,7 +59,7 @@ namespace RatKing.SBT {
 		}
 
 		/// <summary>
-		/// SEQUENCE iterates over its children one by one until the first one returns TaskStatus.Fail
+		/// SEQUENCE iterates over its children one by one until the first one returns Status.Fail
 		/// </summary>
 		class NodeCompositeSequence : NodeComposite {
 			int curIndex;
@@ -68,9 +68,9 @@ namespace RatKing.SBT {
 				: base(tree, name ?? "sequence") { }
 
 			protected override void OnStart() {
-				curStatus = TaskStatus.Running;
+				curStatus = Status.Running;
 				curIndex = 0;
-				tree.processNodes.Add(children[curIndex]);
+				tree.TickNode(children[curIndex]);
 			}
 
 			protected override void OnTick() {
@@ -78,12 +78,12 @@ namespace RatKing.SBT {
 			}
 
 			internal override void OnChildReport(Node child) {
-				if (child.curStatus != TaskStatus.Running) {
-					if (child.curStatus == TaskStatus.Fail || ++curIndex >= childCount) {
+				if (child.curStatus != Status.Running) {
+					if (child.curStatus == Status.Fail || ++curIndex >= childCount) {
 						curStatus = child.curStatus;
 					}
 					else {
-						tree.processNodes.Add(children[curIndex]);
+						tree.TickNode(children[curIndex]);
 						tree.IsTicking = true; // continue tick
 					}
 				}
@@ -91,7 +91,7 @@ namespace RatKing.SBT {
 		}
 
 		/// <summary>
-		/// SELECTOR iterates over its children one by one until the first one returns TaskStatus.Success
+		/// SELECTOR iterates over its children one by one until the first one returns Status.Success
 		/// Called FALLBACK by PandaBT
 		/// </summary>
 		class NodeCompositeSelector : NodeComposite {
@@ -101,18 +101,18 @@ namespace RatKing.SBT {
 				: base(tree, name ?? "selector") { }
 
 			protected override void OnStart() {
-				curStatus = TaskStatus.Running;
+				curStatus = Status.Running;
 				curIndex = 0;
-				tree.processNodes.Add(children[curIndex]);
+				tree.TickNode(children[curIndex]);
 			}
 
 			internal override void OnChildReport(Node child) {
-				if (child.curStatus != TaskStatus.Running) {
-					if (child.curStatus == TaskStatus.Success || ++curIndex >= childCount) {
+				if (child.curStatus != Status.Running) {
+					if (child.curStatus == Status.Success || ++curIndex >= childCount) {
 						curStatus = child.curStatus;
 					}
 					else {
-						tree.processNodes.Add(children[curIndex]);
+						tree.TickNode(children[curIndex]);
 						tree.IsTicking = true; // continue tick
 					}
 				}
@@ -120,8 +120,8 @@ namespace RatKing.SBT {
 		}
 
 		/// <summary>
-		/// PARALLEL executes all its children at once, until they all return TaskStatus.Success,
-		/// or one of them returns TaskStatus.Fail
+		/// PARALLEL executes all its children at once, until they all return Status.Success,
+		/// or one of them returns Status.Fail
 		/// </summary>
 		class NodeCompositeParallel : NodeComposite {
 			int curSuccess;
@@ -130,29 +130,29 @@ namespace RatKing.SBT {
 				: base(tree, name ?? "parallel") { }
 
 			protected override void OnStart() {
-				curStatus = TaskStatus.Running;
+				curStatus = Status.Running;
 				curSuccess = 0;
 				for (var i = 0; i < childCount; ++i) {
-					tree.processNodes.Add(children[i]);
+					tree.TickNode(children[i]);
 				}
 			}
 
 			internal override void OnChildReport(Node child) {
 				switch (child.curStatus) {
-					case TaskStatus.Success:
+					case Status.Success:
 						++curSuccess;
-						if (curSuccess == childCount) { curStatus = TaskStatus.Success; }
+						if (curSuccess == childCount) { curStatus = Status.Success; }
 						break;
-					case TaskStatus.Fail:
-						curStatus = TaskStatus.Fail;
+					case Status.Fail:
+						curStatus = Status.Fail;
 						break;
 				}
 			}
 		}
 
 		/// <summary>
-		/// RACE executes all its children at once, until they all return TaskStatus.Fail,
-		/// or one of them returns TaskStatus.Success
+		/// RACE executes all its children at once, until they all return Status.Fail,
+		/// or one of them returns Status.Success
 		/// </summary>
 		class NodeCompositeRace : NodeComposite {
 			int curFail;
@@ -161,21 +161,21 @@ namespace RatKing.SBT {
 				: base(tree, name ?? "race") { }
 
 			protected override void OnStart() {
-				curStatus = TaskStatus.Running;
+				curStatus = Status.Running;
 				curFail = 0;
 				for (var i = childCount - 1; i >= 0; --i) {
-					tree.processNodes.Add(children[i]);
+					tree.TickNode(children[i]);
 				}
 			}
 
 			internal override void OnChildReport(Node child) {
 				switch (child.curStatus) {
-					case TaskStatus.Success:
-						curStatus = TaskStatus.Success;
+					case Status.Success:
+						curStatus = Status.Success;
 						break;
-					case TaskStatus.Fail:
+					case Status.Fail:
 						++curFail;
-						if (curFail == childCount) { curStatus = TaskStatus.Fail; }
+						if (curFail == childCount) { curStatus = Status.Fail; }
 						break;
 				}
 			}
@@ -190,7 +190,7 @@ namespace RatKing.SBT {
 				: base(tree, name ?? "random selector") { }
 
 			protected override void OnStart() {
-				tree.processNodes.Add(children[tree.random.Next() % childCount]);
+				tree.TickNode(children[tree.random.Next() % childCount]);
 			}
 
 			internal override void OnChildReport(Node child) {

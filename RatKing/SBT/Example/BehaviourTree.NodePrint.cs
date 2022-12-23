@@ -38,13 +38,13 @@ namespace RatKing.SBT {
 			}
 
 			//protected override void OnStart() {
-			// // override start for initialisation things, this is useful if the node's status is TaskStatus.Running
+			// // override start for initialisation things, this is useful if the node's status is Status.Running
 			//}
 
 			// OnTick() is called every time the node 
 			protected override void OnTick() {
-				Debug.Log(message);
-				curStatus = TaskStatus.Success; // set the status here
+				Debug.Log(message, tree.target as Object);
+				curStatus = Status.Success; // set the status here
 			}
 		}
 	}

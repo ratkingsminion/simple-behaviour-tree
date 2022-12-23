@@ -6,7 +6,7 @@ namespace RatKing.SBT {
 	// inspired by fluid BT: https://github.com/ashblue/fluid-behavior-tree
 	// also by PandaBT: http://www.pandabt.com/documentation/2.0.0
 
-	public enum TaskStatus {
+	public enum Status {
 		Success,
 		Fail,
 		Running
@@ -18,7 +18,8 @@ namespace RatKing.SBT {
 			protected BehaviourTree<T> tree;
 			internal string name; // for debugging purposes
 			internal Node parent; // can be null, then it's at the root
-			internal TaskStatus curStatus = TaskStatus.Fail;
+			internal Status curStatus = Status.Fail;
+			internal bool isProcessing;
 
 			protected Node(BehaviourTree<T> tree, string name)
 				=> (this.tree, this.name, this.parent) = (tree, name, tree.processNodes.Count > 0 ? tree.processNodes[^1] : null);
@@ -30,7 +31,7 @@ namespace RatKing.SBT {
 			}
 
 			internal void Tick() {
-				if (curStatus != TaskStatus.Running) { OnStart(); }
+				if (curStatus != Status.Running) { isProcessing = true; OnStart(); }
 				OnTick();
 			}
 
@@ -38,15 +39,15 @@ namespace RatKing.SBT {
 			/// Called on the start of a tick as long as the node is not Running
 			/// </summary>
 			protected virtual void OnStart() { }
-
+			
 			/// <summary>
 			/// Called every tick
 			/// </summary>
 			protected virtual void OnTick() { }
 
 			/// <summary>
-			/// OnChildReport() gets the report from the children of this node (if it has children)
-			/// Is allowed to add new processNodes, but NOT remove them! (Use tree.Untick() for that!)
+			/// OnChildReport() gets the report from the children of this node (if it has children).
+			/// To add a new node for processing, use tree.TickNode(); to remove a node, use tree.UntickNode()
 			/// </summary>
 			internal virtual void OnChildReport(Node child) { }
 
@@ -101,9 +102,9 @@ namespace RatKing.SBT {
 				var withColour = richText;
 				if (withColour) {
 					switch (node.curStatus) {
-						case TaskStatus.Success:
-						case TaskStatus.Fail:	 withColour = false; break;
-						case TaskStatus.Running: debugSB.Append("<color=#0f0>"); break;
+						case Status.Success:
+						case Status.Fail:	 withColour = false; break;
+						case Status.Running: debugSB.Append("<color=#0f0>"); break;
 					}
 				}
 				if (withTabs) { debugSB.Append(debugTab, 0, depth * tabWidth); }
@@ -128,12 +129,12 @@ namespace RatKing.SBT {
 		/// <summary>
 		/// Call this to tick the tree and traverse its nodes
 		/// </summary>
-		public TaskStatus Tick(double deltaTime) {
+		public Status Tick(double deltaTime) {
 			DeltaTime = deltaTime;
 
 			IsTicking = true;
 			if (processNodes.Count == 0) {
-				processNodes.Add(root);
+				TickNode(root);
 			}
 
 			while (IsTicking && processNodes.Count > 0) {
@@ -148,10 +149,10 @@ namespace RatKing.SBT {
 				for (--tickProcessNodeIdx; tickProcessNodeIdx >= 1; --tickProcessNodeIdx) {
 					var node = processNodes[tickProcessNodeIdx];
 					node.parent.OnChildReport(node);
-					if (node.curStatus != TaskStatus.Running) { UntickNode(node); }
+					if (node.curStatus != Status.Running) { UntickNode(node); }
 				}
 
-				if (processNodes[0].curStatus != TaskStatus.Running) {
+				if (processNodes[0].curStatus != Status.Running) {
 					UntickNode(processNodes[0]);
 				}
 
@@ -159,20 +160,24 @@ namespace RatKing.SBT {
 					var node = nodesToRemove.Pop();
 					if (processNodes.Remove(node)) { node.OnRemove(); }
 				}
-
-				// TODO: optionally break after X iterations?
 			}
 			
 			IsTicking = false;
 
-			if (processNodes.Count == 0) { return TaskStatus.Success; }
+			if (processNodes.Count == 0) { return Status.Success; }
 			else if (processNodes.Count == 1) { return processNodes[0].curStatus; }
-			return TaskStatus.Running;
+			return Status.Running;
+		}
+
+		void TickNode(Node node) {
+			node.isProcessing = true;
+			processNodes.Add(node);
 		}
 
 		void UntickNode(Node node, bool setToFail = false) {
-			if (!nodesToRemove.Contains(node)) {
-				if (setToFail) { node.curStatus = TaskStatus.Fail; }
+			if (node.isProcessing) {
+				node.isProcessing = false;
+				if (setToFail) { node.curStatus = Status.Fail; }
 				nodesToRemove.Push(node);
 			}
 		}
@@ -183,8 +188,8 @@ namespace RatKing.SBT {
 		public void Reset() {
 			IsTicking = false;
 			tickProcessNodeIdx = 0;
-			foreach (var n in processNodes) { n.curStatus = TaskStatus.Fail; }
-			foreach (var n in nodesToRemove) { n.curStatus = TaskStatus.Fail; }
+			foreach (var n in processNodes) { n.isProcessing = false; n.curStatus = Status.Fail; }
+			foreach (var n in nodesToRemove) { n.isProcessing = false; n.curStatus = Status.Fail; }
 			processNodes.Clear();
 			nodesToRemove.Clear();
 		}
