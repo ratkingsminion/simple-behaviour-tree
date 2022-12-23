@@ -28,7 +28,7 @@ namespace RatKing.SBT {
 			=> Register(new NodeDecoratorRepeat(this, name));
 
 		/// <summary>
-		/// Retry the child until it returns TaskStatus.Success
+		/// Repeat the child until it returns TaskStatus.Success
 		/// </summary>
 		public BehaviourTree<T> Retry(string name = null)
 			=> Register(new NodeDecoratorRetry(this, name));

@@ -53,3 +53,29 @@ Usage (Unity):
     }
   }
 ```
+
+Have a look at Example/BehaviourTree.NodePrint.cs to see how to add your own action nodes. To find out how to add composite nodes (like Sequence) and decorator nodes (like Invert), derive from NodeComposite/NodeDecorator instead of just Node and look at the implementation of the standard composite/decorator nodes.
+
+## Action Nodes
+
+* Do - Execute a generic action; if you provide a start action, it's assumed the standard status is TaskStatus.Running instead of TaskStatus.Success
+* Fail - Directly fail
+* Success - Directly succeed
+* Wait - Wait X seconds; depends on what deltaTime you provide as argument for Tick()
+
+## Composite Nodes
+
+* Sequence - Iterate over the children until the child that fails
+* Selector - Iterate over the children until the child that succeeds
+* Parallel - Execute all the children at once until one of them fails or all of them succeed
+* Race - Execute all the children at once until one of them succeeds or all of them fail
+* RandomSelector - Randomly select a child and execute it
+
+Composite nodes always need a call to End() in the hierarchy (see above).
+
+## Decorator Nodes
+
+* Invert - Invert the child's TaskStatus, if it's not running
+* Override - Override the child's TaskStatus, if it's not running
+* Repeat - Repeat the child until it returns TaskStatus.Fail
+* Retry - Repeat the child until it returns TaskStatus.Success

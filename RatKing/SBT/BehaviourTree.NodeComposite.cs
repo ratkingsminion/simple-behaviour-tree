@@ -18,21 +18,21 @@ namespace RatKing.SBT {
 			=> Register(new NodeCompositeSelector(this, name));
 		
 		/// <summary>
-		/// Execute all the children at once until one of them fails.
+		/// Execute all the children at once until one of them fails or all of them succeed.
 		/// Don't forget to close a compositor node with End()
 		/// </summary>
 		public BehaviourTree<T> Parallel(string name = null)
 			=> Register(new NodeCompositeParallel(this, name));
 		
 		/// <summary>
-		/// Execute all the children at once until one of them succeeds.
+		/// Execute all the children at once until one of them succeeds or all of them fail.
 		/// Don't forget to close a compositor node with End()
 		/// </summary>
 		public BehaviourTree<T> Race(string name = null)
 			=> Register(new NodeCompositeRace(this, name));
 
 		/// <summary>
-		/// RANDOM SELECT a child and execute it.
+		/// Randomly select a child and execute it.
 		/// Don't forget to close a compositor node with End()
 		/// </summary>
 		public BehaviourTree<T> RandomSelector(string name = null)
@@ -182,8 +182,8 @@ namespace RatKing.SBT {
 		}
 
 		/// <summary>
-		/// RANDOM SELECTOR chooses one of its children randomly and ticks it,
-		/// it returns the same result as its child
+		/// Randomly chooses one of its children and ticks it;
+		/// Returns the same result as its child
 		/// </summary>
 		class NodeCompositeRandomSelector : NodeComposite {
 			public NodeCompositeRandomSelector(BehaviourTree<T> tree, string name)

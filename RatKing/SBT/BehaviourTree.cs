@@ -39,6 +39,9 @@ namespace RatKing.SBT {
 			/// </summary>
 			protected virtual void OnStart() { }
 
+			/// <summary>
+			/// Called every tick
+			/// </summary>
 			protected virtual void OnTick() { }
 
 			/// <summary>
