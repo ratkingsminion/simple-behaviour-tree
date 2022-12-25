@@ -56,10 +56,13 @@ Have a look at Example/BehaviourTree.NodePrint.cs to see how to add your own act
 
 ## Action Nodes
 
-* Do - Execute a generic action; if you provide a start action, it's assumed the standard status is Status.Running instead of Status.Success
+* Do - Execute a generic action
+  * has several overloads
+  * also works like a condition when the `action` callback returns `Status.Success`/`Status.Fail`, or just `true`/`false`
+  * for some overloads with the `start` callback the standard status is `false`/`Status.Running` instead of `true`/`Status.Success`
 * Fail - Directly fail
 * Success - Directly succeed
-* Wait - Wait X seconds; depends on what deltaTime you provide as argument for Tick()
+* Wait - Is running for X seconds (depends on what deltaTime you provide as argument for `Tick()`)
 
 ## Composite Nodes
 
@@ -73,7 +76,7 @@ Composite nodes always need a call to End() in the hierarchy (see above).
 
 ## Decorator Nodes
 
-* Invert - Invert the child's Status, if it's not running
-* Override - Override the child's Status, if it's not running
-* Repeat - Repeat the child until its curStatus is Status.Fail
-* Retry - Repeat the child until its curStatus is Status.Success
+* Invert - Invert the child's `curStatus`, if it's not running
+* Override - Override the child's `curStatus`, if it's not running
+* Repeat - Repeat the child until its `curStatus` is `Status.Fail`
+* Retry - Repeat the child until its `curStatus` is `Status.Success`
