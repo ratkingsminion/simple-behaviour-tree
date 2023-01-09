@@ -58,8 +58,8 @@ Have a look at Example/BehaviourTree.NodePrint.cs to see how to add your own act
 
 * Do - Execute a generic action
   * has several overloads
-  * also works like a condition when the `action` callback returns `Status.Success`/`Status.Fail`, or just `true`/`false`
   * for some overloads with the `start` callback the standard status is `false`/`Status.Running` instead of `true`/`Status.Success`
+* Check - Basically the same as Do, but explicitly works as condition
 * Fail - Directly fail
 * Success - Directly succeed
 * Wait - Is running for X seconds (depends on what deltaTime you provide as argument for `Tick()`)
@@ -72,7 +72,7 @@ Have a look at Example/BehaviourTree.NodePrint.cs to see how to add your own act
 * Race - Execute all the children at once until one of them succeeds or all of them fail
 * RandomSelector - Randomly select a child and execute it
 
-Composite nodes always need a call to End() in the hierarchy (see above).
+Composite nodes always need a call to End() in the hierarchy (see example above).
 
 ## Decorator Nodes
 
