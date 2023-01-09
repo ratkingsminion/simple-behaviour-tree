@@ -3,24 +3,24 @@ using System.Collections.Generic;
 namespace RatKing.SBT {
 
 	public partial class BehaviourTree<T> {
-		
+
 		public BehaviourTree<T> Fail(string name = null) => Register(new NodeFail(this, name));
 
 		public BehaviourTree<T> Success(string name = null) => Register(new NodeSuccess(this, name));
 
 		// generic actions
-		
+
 		/// <summary>
-		/// Execute an action
+		/// Execute an action that sets the node's status
 		/// </summary>
-		public BehaviourTree<T> Do(System.Func<Status> action) {
-			return Do((string)null, action);
+		public BehaviourTree<T> Check(System.Func<Status> action) {
+			return Check((string)null, action);
 		}
-		
+
 		/// <summary>
-		/// Execute an action
+		/// Execute an action that sets the node's status
 		/// </summary>
-		public BehaviourTree<T> Do(string name, System.Func<Status> action) {
+		public BehaviourTree<T> Check(string name, System.Func<Status> action) {
 			var node = new NodeActionSimple(this, name, action);
 			return Register(node);
 		}
@@ -31,7 +31,7 @@ namespace RatKing.SBT {
 		public BehaviourTree<T> Do(System.Action action, Status result) {
 			return Do((string)null, action, result);
 		}
-		
+
 		/// <summary>
 		/// Execute an action
 		/// </summary>
@@ -41,50 +41,50 @@ namespace RatKing.SBT {
 		}
 
 		/// <summary>
-		/// Execute an action
+		/// Execute an action that sets the node's status
 		/// </summary>
-		public BehaviourTree<T> Do(System.Func<bool> action) {
-			return Do((string)null, action);
+		public BehaviourTree<T> Check(System.Func<bool> action) {
+			return Check((string)null, action);
 		}
-		
+
 		/// <summary>
-		/// Execute an action; if the action returns false, the Status is set to Fail
+		/// Execute an action that sets the node's status; if the action returns false, the Status is set to Fail
 		/// </summary>
-		public BehaviourTree<T> Do(string name, System.Func<bool> action) {
+		public BehaviourTree<T> Check(string name, System.Func<bool> action) {
 			var node = new NodeActionSimple(this, name, () => action() ? Status.Success : Status.Fail);
 			return Register(node);
 		}
-		
+
 		/// <summary>
 		/// Execute an action; if the result is set to false, the Status is set to Fail
 		/// </summary>
 		public BehaviourTree<T> Do(System.Action action, bool result = true) {
 			return Do((string)null, action, result);
 		}
-		
+
 		/// <summary>
 		/// Execute an action; if the result is set to false, the Status is set to Fail
 		/// </summary>
 		public BehaviourTree<T> Do(string name, System.Action action, bool result = true) {
 			var node = new NodeActionSimple(this, name, result
 				? () => { action(); return Status.Success; }
-				: () => { action(); return Status.Fail; });
+			: () => { action(); return Status.Fail; });
 			return Register(node);
 		}
 
 		// generic actions, targeted
-		
+
 		/// <summary>
-		/// Execute an action
+		/// Execute an action that sets the node's status
 		/// </summary>
-		public BehaviourTree<T> Do(System.Func<T, Status> action) {
-			return Do((string)null, action);
+		public BehaviourTree<T> Check(System.Func<T, Status> action) {
+			return Check((string)null, action);
 		}
-		
+
 		/// <summary>
-		/// Execute an action
+		/// Execute an action that sets the node's status
 		/// </summary>
-		public BehaviourTree<T> Do(string name, System.Func<T, Status> action) {
+		public BehaviourTree<T> Check(string name, System.Func<T, Status> action) {
 			var node = new NodeTargetedActionSimple(this, name, action);
 			return Register(node);
 		}
@@ -95,7 +95,7 @@ namespace RatKing.SBT {
 		public BehaviourTree<T> Do(System.Action<T> action, Status result) {
 			return Do((string)null, action, result);
 		}
-		
+
 		/// <summary>
 		/// Execute an action
 		/// </summary>
@@ -105,50 +105,50 @@ namespace RatKing.SBT {
 		}
 
 		/// <summary>
-		/// Execute an action; if the action returns false, the Status is set to Fail
+		/// Execute an action that sets the node's status; if the action returns false, the Status is set to Fail
 		/// </summary>
-		public BehaviourTree<T> Do(System.Func<T, bool> action) {
-			return Do((string)null, action);
+		public BehaviourTree<T> Check(System.Func<T, bool> action) {
+			return Check((string)null, action);
 		}
-		
+
 		/// <summary>
-		/// Execute an action; if the action returns false, the Status is set to Fail
+		/// Execute an action that sets the node's status; if the action returns false, the Status is set to Fail
 		/// </summary>
-		public BehaviourTree<T> Do(string name, System.Func<T, bool> action) {
+		public BehaviourTree<T> Check(string name, System.Func<T, bool> action) {
 			var node = new NodeTargetedActionSimple(this, name, target => action(target) ? Status.Success : Status.Fail);
 			return Register(node);
 		}
-		
+
 		/// <summary>
 		/// Execute an action; if the result is set to false, the Status is set to Fail
 		/// </summary>
 		public BehaviourTree<T> Do(System.Action<T> action, bool result = true) {
 			return Do((string)null, action, result);
 		}
-		
+
 		/// <summary>
 		/// Execute an action; if the result is set to false, the Status is set to Fail
 		/// </summary>
 		public BehaviourTree<T> Do(string name, System.Action<T> action, bool result = true) {
 			var node = new NodeTargetedActionSimple(this, name, result
 				? target => { action(target); return Status.Success; }
-				: target => { action(target); return Status.Fail; });
+			: target => { action(target); return Status.Fail; });
 			return Register(node);
 		}
 
 		// generic actions with start for initialisation
-		
+
 		/// <summary>
-		/// Execute an action
+		/// Execute an action that sets the node's status
 		/// </summary>
-		public BehaviourTree<T> Do(System.Action start, System.Func<Status> action) {
-			return Do((string)null, start, action);
+		public BehaviourTree<T> Check(System.Action start, System.Func<Status> action) {
+			return Check((string)null, start, action);
 		}
-		
+
 		/// <summary>
-		/// Execute an action
+		/// Execute an action that sets the node's status
 		/// </summary>
-		public BehaviourTree<T> Do(string name, System.Action start, System.Func<Status> action) {
+		public BehaviourTree<T> Check(string name, System.Action start, System.Func<Status> action) {
 			var node = new NodeAction(this, name, start, action);
 			return Register(node);
 		}
@@ -159,7 +159,7 @@ namespace RatKing.SBT {
 		public BehaviourTree<T> Do(System.Action start, System.Action action, Status result) {
 			return Do((string)null, start, action, result);
 		}
-		
+
 		/// <summary>
 		/// Execute an action
 		/// </summary>
@@ -169,50 +169,48 @@ namespace RatKing.SBT {
 		}
 
 		/// <summary>
-		/// Execute an action; if the action returns false, the Status is set to Running
+		/// Execute an action that sets the node's status; if the action returns false, the Status is set to Running
 		/// </summary>
 		public BehaviourTree<T> Do(System.Action start, System.Func<bool> action) {
 			return Do((string)null, start, action);
 		}
-		
+
 		/// <summary>
-		/// Execute an action; if the action returns false, the Status is set to Running
+		/// Execute an action that sets the node's status; if the action returns false, the Status is set to Running
 		/// </summary>
 		public BehaviourTree<T> Do(string name, System.Action start, System.Func<bool> action) {
 			var node = new NodeAction(this, name, start, () => action() ? Status.Success : Status.Running);
 			return Register(node);
 		}
-		
+
 		/// <summary>
 		/// Execute an action; if the result is set to false, the Status is set to Running
 		/// </summary>
 		public BehaviourTree<T> Do(System.Action start, System.Action action, bool result = false) {
 			return Do((string)null, start, action, result);
 		}
-		
+
 		/// <summary>
 		/// Execute an action; if the result is set to false, the Status is set to Running
 		/// </summary>
 		public BehaviourTree<T> Do(string name, System.Action start, System.Action action, bool result = false) {
 			var node = new NodeAction(this, name, start, result
 				? () => { action(); return Status.Success; }
-				: () => { action(); return Status.Running; });
+			: () => { action(); return Status.Running; });
 			return Register(node);
 		}
 
-		// generic actions, targeted
-		
 		/// <summary>
-		/// Execute an action
+		/// Execute an action that sets the node's status
 		/// </summary>
-		public BehaviourTree<T> Do(System.Action<T> start, System.Func<T, Status> action) {
-			return Do((string)null, start, action);
+		public BehaviourTree<T> Check(System.Action<T> start, System.Func<T, Status> action) {
+			return Check((string)null, start, action);
 		}
-		
+
 		/// <summary>
-		/// Execute an action
+		/// Execute an action that sets the node's status
 		/// </summary>
-		public BehaviourTree<T> Do(string name, System.Action<T> start, System.Func<T, Status> action) {
+		public BehaviourTree<T> Check(string name, System.Action<T> start, System.Func<T, Status> action) {
 			var node = new NodeTargetedAction(this, name, start, action);
 			return Register(node);
 		}
@@ -223,7 +221,7 @@ namespace RatKing.SBT {
 		public BehaviourTree<T> Do(System.Action<T> start, System.Action<T> action, Status result) {
 			return Do((string)null, start, action, result);
 		}
-		
+
 		/// <summary>
 		/// Execute an action
 		/// </summary>
@@ -233,34 +231,34 @@ namespace RatKing.SBT {
 		}
 
 		/// <summary>
-		/// Execute an action; if the action returns false, the Status is set to Running
+		/// Execute an action that sets the node's status; if the action returns false, the Status is set to Running
 		/// </summary>
 		public BehaviourTree<T> Do(System.Action<T> start, System.Func<T, bool> action) {
 			return Do((string)null, start, action);
 		}
-		
+
 		/// <summary>
-		/// Execute an action; if the action returns false, the Status is set to Running
+		/// Execute an action that sets the node's status; if the action returns false, the Status is set to Running
 		/// </summary>
 		public BehaviourTree<T> Do(string name, System.Action<T> start, System.Func<T, bool> action) {
 			var node = new NodeTargetedAction(this, name, start, target => action(target) ? Status.Success : Status.Running);
 			return Register(node);
 		}
-		
+
 		/// <summary>
 		/// Execute an action; if the result is set to false, the Status is set to Running
 		/// </summary>
 		public BehaviourTree<T> Do(System.Action<T> start, System.Action<T> action, bool result = false) {
 			return Do((string)null, start, action, result);
 		}
-		
+
 		/// <summary>
 		/// Execute an action; if the result is set to false, the Status is set to Running
 		/// </summary>
 		public BehaviourTree<T> Do(string name, System.Action<T> start, System.Action<T> action, bool result = false) {
 			var node = new NodeTargetedAction(this, name, start, result
 				? target => { action(target); return Status.Success; }
-				: target => { action(target); return Status.Running; });
+			: target => { action(target); return Status.Running; });
 			return Register(node);
 		}
 
@@ -271,7 +269,7 @@ namespace RatKing.SBT {
 		/// </summary>
 		public BehaviourTree<T> Wait(double waitTime) =>
 			Register(new NodeWait(this, null, waitTime));
-		
+
 		/// <summary>
 		/// Returns Success when it finishes waiting
 		/// </summary>
@@ -286,11 +284,9 @@ namespace RatKing.SBT {
 		/// </summary>
 		class NodeFail : Node {
 			public NodeFail(BehaviourTree<T> tree, string name)
-				: base(tree, name ?? "fail") { }
+				: base(tree, name ?? "fail") { curStatus = Status.Fail; }
 
-			protected override void OnStart() {
-				curStatus = Status.Fail;
-			}
+			protected override void OnTick() { }
 		}
 
 		/// <summary>
@@ -298,11 +294,9 @@ namespace RatKing.SBT {
 		/// </summary>
 		class NodeSuccess : Node {
 			public NodeSuccess(BehaviourTree<T> tree, string name)
-				: base(tree, name ?? "success") { }
+				: base(tree, name ?? "success") { curStatus = Status.Success; }
 
-			protected override void OnStart() {
-				curStatus = Status.Success;
-			}
+			protected override void OnTick() { }
 		}
 
 		//
