@@ -9,21 +9,21 @@ namespace RatKing.SBT {
 		/// </summary>
 		public BehaviourTree<T> Sequence(string name = null)
 			=> Register(new NodeCompositeSequence(this, name));
-		
+
 		/// <summary>
 		/// Iterate over the children until the child that succeeds.
 		/// Don't forget to close a compositor node with End()
 		/// </summary>
 		public BehaviourTree<T> Selector(string name = null)
 			=> Register(new NodeCompositeSelector(this, name));
-		
+
 		/// <summary>
 		/// Execute all the children at once until one of them fails or all of them succeed.
 		/// Don't forget to close a compositor node with End()
 		/// </summary>
 		public BehaviourTree<T> Parallel(string name = null)
 			=> Register(new NodeCompositeParallel(this, name));
-		
+
 		/// <summary>
 		/// Execute all the children at once until one of them succeeds or all of them fail.
 		/// Don't forget to close a compositor node with End()
@@ -47,7 +47,7 @@ namespace RatKing.SBT {
 
 			protected NodeComposite(BehaviourTree<T> tree, string name)
 				: base(tree, name) { }
-			
+
 			internal override void OnRemove() {
 				foreach (var c in children) { tree.UntickNode(c, true); }
 			}
@@ -71,10 +71,6 @@ namespace RatKing.SBT {
 				curStatus = Status.Running;
 				curIndex = 0;
 				tree.TickNode(children[curIndex]);
-			}
-
-			protected override void OnTick() {
-				base.OnTick();
 			}
 
 			internal override void OnChildReport(Node child) {

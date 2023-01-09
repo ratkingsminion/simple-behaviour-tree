@@ -8,19 +8,19 @@ namespace RatKing.SBT {
 		/// </summary>
 		public BehaviourTree<T> Invert(string name = null)
 			=> Register(new NodeDecoratorInvert(this, name));
-		
+
 		/// <summary>
 		/// Override the child's Status, if it's not running
 		/// </summary>
 		public BehaviourTree<T> Override(Status status = Status.Success)
 			=> Register(new NodeDecoratorOverride(this, null, status));
-		
+
 		/// <summary>
 		/// Override the child's Status, if it's not running
 		/// </summary>
 		public BehaviourTree<T> Override(string name, Status status = Status.Success)
 			=> Register(new NodeDecoratorOverride(this, name, status));
-		
+
 		/// <summary>
 		/// Repeat the child until it returns Status.Fail
 		/// </summary>
@@ -45,7 +45,7 @@ namespace RatKing.SBT {
 			protected override void OnStart() {
 				tree.TickNode(child);
 			}
-			
+
 			internal override void OnRemove() {
 				tree.UntickNode(child, true);
 			}
@@ -115,7 +115,7 @@ namespace RatKing.SBT {
 		/// <summary>
 		/// RETRY is running as long as its child doesn't return Status.Success
 		/// </summary>
-		class NodeDecoratorRetry: NodeDecorator {
+		class NodeDecoratorRetry : NodeDecorator {
 			public NodeDecoratorRetry(BehaviourTree<T> tree, string name)
 				: base(tree, name ?? "retry") { }
 
