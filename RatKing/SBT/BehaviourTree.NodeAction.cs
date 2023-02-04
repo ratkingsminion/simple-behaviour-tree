@@ -12,6 +12,15 @@ namespace RatKing.SBT {
 
 		/// <summary>
 		/// Execute an action that sets the node's status
+		/// Hint: there's a Check() node with the same arguments
+		/// </summary>
+		public BehaviourTree<T> Do(System.Func<Status> action) {
+			return Do((string)null, action);
+		}
+
+		/// <summary>
+		/// Execute an action that sets the node's status
+		/// Hint: there's a Do() node with the same arguments
 		/// </summary>
 		public BehaviourTree<T> Check(System.Func<Status> action) {
 			return Check((string)null, action);
@@ -19,6 +28,16 @@ namespace RatKing.SBT {
 
 		/// <summary>
 		/// Execute an action that sets the node's status
+		/// Hint: there's a Check() node with the same arguments
+		/// </summary>
+		public BehaviourTree<T> Do(string name, System.Func<Status> action) {
+			var node = new NodeActionSimple(this, name, action);
+			return Register(node);
+		}
+
+		/// <summary>
+		/// Execute an action that sets the node's status
+		/// Hint: there's a Do() node with the same arguments
 		/// </summary>
 		public BehaviourTree<T> Check(string name, System.Func<Status> action) {
 			var node = new NodeActionSimple(this, name, action);
@@ -76,6 +95,15 @@ namespace RatKing.SBT {
 
 		/// <summary>
 		/// Execute an action that sets the node's status
+		/// Hint: there's a Check() node with the same arguments
+		/// </summary>
+		public BehaviourTree<T> Do(System.Func<T, Status> action) {
+			return Do((string)null, action);
+		}
+
+		/// <summary>
+		/// Execute an action that sets the node's status
+		/// Hint: there's a Do() node with the same arguments
 		/// </summary>
 		public BehaviourTree<T> Check(System.Func<T, Status> action) {
 			return Check((string)null, action);
@@ -83,6 +111,16 @@ namespace RatKing.SBT {
 
 		/// <summary>
 		/// Execute an action that sets the node's status
+		/// Hint: there's a Check() node with the same arguments
+		/// </summary>
+		public BehaviourTree<T> Do(string name, System.Func<T, Status> action) {
+			var node = new NodeTargetedActionSimple(this, name, action);
+			return Register(node);
+		}
+
+		/// <summary>
+		/// Execute an action that sets the node's status
+		/// Hint: there's a Do() node with the same arguments
 		/// </summary>
 		public BehaviourTree<T> Check(string name, System.Func<T, Status> action) {
 			var node = new NodeTargetedActionSimple(this, name, action);
@@ -140,9 +178,27 @@ namespace RatKing.SBT {
 
 		/// <summary>
 		/// Execute an action that sets the node's status
+		/// Hint: there's a Check() node with the same arguments
+		/// </summary>
+		public BehaviourTree<T> Do(System.Action start, System.Func<Status> action) {
+			return Do((string)null, start, action);
+		}
+
+		/// <summary>
+		/// Execute an action that sets the node's status
+		/// Hint: there's a Do() node with the same arguments
 		/// </summary>
 		public BehaviourTree<T> Check(System.Action start, System.Func<Status> action) {
 			return Check((string)null, start, action);
+		}
+
+		/// <summary>
+		/// Execute an action that sets the node's status
+		/// Hint: there's a Check() node with the same arguments
+		/// </summary>
+		public BehaviourTree<T> Do(string name, System.Action start, System.Func<Status> action) {
+			var node = new NodeAction(this, name, start, action);
+			return Register(node);
 		}
 
 		/// <summary>
@@ -202,6 +258,15 @@ namespace RatKing.SBT {
 
 		/// <summary>
 		/// Execute an action that sets the node's status
+		/// Hint: there's a Check() node with the same arguments
+		/// </summary>
+		public BehaviourTree<T> Do(System.Action<T> start, System.Func<T, Status> action) {
+			return Do((string)null, start, action);
+		}
+
+		/// <summary>
+		/// Execute an action that sets the node's status
+		/// Hint: there's a Do() node with the same arguments
 		/// </summary>
 		public BehaviourTree<T> Check(System.Action<T> start, System.Func<T, Status> action) {
 			return Check((string)null, start, action);
@@ -209,6 +274,16 @@ namespace RatKing.SBT {
 
 		/// <summary>
 		/// Execute an action that sets the node's status
+		/// Hint: there's a Check() node with the same arguments
+		/// </summary>
+		public BehaviourTree<T> Do(string name, System.Action<T> start, System.Func<T, Status> action) {
+			var node = new NodeTargetedAction(this, name, start, action);
+			return Register(node);
+		}
+
+		/// <summary>
+		/// Execute an action that sets the node's status
+		/// Hint: there's a Do() node with the same arguments
 		/// </summary>
 		public BehaviourTree<T> Check(string name, System.Action<T> start, System.Func<T, Status> action) {
 			var node = new NodeTargetedAction(this, name, start, action);
