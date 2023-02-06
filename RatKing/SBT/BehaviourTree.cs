@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 
 namespace RatKing.SBT {
 
@@ -63,7 +64,11 @@ namespace RatKing.SBT {
 		readonly T target;
 		readonly Stack<Node> nodesToRemove = new();
 		readonly List<Node> processNodes = new();
-		Node root;
+		
+		/// <summary>
+		/// a tree with more than one root is technically malformed, but can be useful when using InsertTree()
+		/// </summary>
+		readonly List<Node> roots = new();
 
 		readonly System.Random random = new();
 
@@ -72,6 +77,7 @@ namespace RatKing.SBT {
 		/// Warning: only use this indirectly, inside nodes via tree.DeltaTime (because subtrees don't get updated time)
 		/// </summary>
 		public double DeltaTime { get; private set; }
+		public float DeltaTimeF => (float)DeltaTime;
 
 		public bool IsTicking { get; private set; }
 		int tickProcessNodeIdx = 0;
@@ -97,7 +103,7 @@ namespace RatKing.SBT {
 
 		//
 
-		public string GenerateString(bool richText = false, int tabWidth = 3) {
+		public string GenerateString(bool richText = false, int tabWidth = 3, int rootIdx = 0) {
 			debugSB.Clear();
 			void AddNode(Node node, int depth = 0, bool withTabs = true) {
 				if (node == null) { return; }
@@ -124,19 +130,19 @@ namespace RatKing.SBT {
 					}
 				}
 			}
-			AddNode(root);
+			if (roots.Count - 1 >= rootIdx) { AddNode(roots[rootIdx]); }
 			return debugSB.ToString();
 		}
 
 		/// <summary>
 		/// Call this to tick the tree and traverse its nodes
 		/// </summary>
-		public Status Tick(double deltaTime) {
+		public Status Tick(double deltaTime, int rootIdx = 0) {
 			DeltaTime = deltaTime;
 
 			IsTicking = true;
 			if (processNodes.Count == 0) {
-				TickNode(root);
+				TickNode(roots[rootIdx]);
 			}
 
 			++tickCounter;
@@ -204,11 +210,13 @@ namespace RatKing.SBT {
 		// building the hierarchy
 
 		BehaviourTree<T> Register(Node node) {
-			root ??= node;
 			if (processNodes.Count > 0) {
 				var last = processNodes.Count - 1;
 				if (processNodes[last] is NodeComposite c) { c.AddChild(node); }
 				else if (processNodes[last] is NodeDecorator d) { d.child = node; processNodes.RemoveAt(last); }
+			}
+			else {
+				roots.Add(node);
 			}
 			if (node is NodeComposite || node is NodeDecorator) { processNodes.Add(node); }
 			return this;
@@ -220,29 +228,31 @@ namespace RatKing.SBT {
 		/// Insert another Behaviour Tree with the same target type
 		/// </summary>
 		public BehaviourTree<T> InsertTree(BehaviourTree<T> other) {
-			if (other == null || other.root == null) { return this; }
+			if (other == null || other.roots.Count == 0) { return this; }
 
-			var clonedRoot = other.root.Clone(this, processNodes.Count > 0 ? processNodes[^1] : null);
-			Register(clonedRoot);
+			foreach (var otherRoot in other.roots) {
+				var clonedRoot = otherRoot.Clone(this, processNodes.Count > 0 ? processNodes[^1] : null);
+				Register(clonedRoot);
 
-			var stack = new Stack<(Node original, Node clone)>();
-			stack.Push((other.root, clonedRoot));
-			while (stack.Count > 0) {
-				var (original, clone) = stack.Pop();
-				if (original is NodeComposite oc && clone is NodeComposite cc) {
-					foreach (var c in oc.children) {
-						cc.AddChild(c.Clone(this, clone));
-						stack.Push((c, cc.children[^1]));
+				var stack = new Stack<(Node original, Node clone)>();
+				stack.Push((otherRoot, clonedRoot));
+				while (stack.Count > 0) {
+					var (original, clone) = stack.Pop();
+					if (original is NodeComposite oc && clone is NodeComposite cc) {
+						foreach (var c in oc.children) {
+							cc.AddChild(c.Clone(this, clone));
+							stack.Push((c, cc.children[^1]));
+						}
+					}
+					else if (original is NodeDecorator od && clone is NodeDecorator cd) {
+						cd.child = od.child.Clone(this, clone);
+						stack.Push((od.child, cd.child));
 					}
 				}
-				else if (original is NodeDecorator od && clone is NodeDecorator cd) {
-					cd.child = od.child.Clone(this, clone);
-					stack.Push((od.child, cd.child));
-				}
-			}
 
-			if (clonedRoot is NodeComposite) {
-				processNodes.RemoveAt(processNodes.Count - 1);
+				if (clonedRoot is NodeComposite) {
+					processNodes.RemoveAt(processNodes.Count - 1);
+				}
 			}
 
 			return this;
@@ -265,7 +275,7 @@ namespace RatKing.SBT {
 		/// </summary>
 		public BehaviourTree<T> ClearNodes() {
 			Reset();
-			root = null;
+			roots.Clear();
 			return this;
 		}
 	}
