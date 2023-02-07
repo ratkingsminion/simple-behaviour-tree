@@ -340,16 +340,28 @@ namespace RatKing.SBT {
 		// special actions
 
 		/// <summary>
-		/// Returns Success when it finishes waiting
+		/// Returns Success when it finishes waiting a fixed amount of time
 		/// </summary>
 		public BehaviourTree<T> Wait(double waitTime) =>
 			Register(new NodeWait(this, null, waitTime));
 
 		/// <summary>
-		/// Returns Success when it finishes waiting
+		/// Returns Success when it finishes waiting a fixed amount of time
 		/// </summary>
 		public BehaviourTree<T> Wait(string name, double waitTime) =>
 			Register(new NodeWait(this, name, waitTime));
+
+		/// <summary>
+		/// Returns Success when it finishes waiting a dynamic amount of time
+		/// </summary>
+		public BehaviourTree<T> Wait(System.Func<double> waitTime) =>
+			Register(new NodeWaitDynamic(this, null, waitTime));
+
+		/// <summary>
+		/// Returns Success when it finishes waiting a dynamic amount of time
+		/// </summary>
+		public BehaviourTree<T> Wait(string name, System.Func<double> waitTime) =>
+			Register(new NodeWaitDynamic(this, name, waitTime));
 
 		//
 		// the nodes
@@ -485,7 +497,7 @@ namespace RatKing.SBT {
 		}
 
 		/// <summary>
-		/// WAIT waits X seconds
+		/// WAIT waits X seconds, fixed
 		/// </summary>
 		class NodeWait : Node {
 			double waitTime;
@@ -506,6 +518,36 @@ namespace RatKing.SBT {
 
 			protected override void OnStart() {
 				curTime = waitTime;
+			}
+
+			protected override void OnTick() {
+				curTime -= tree.DeltaTime;
+				curStatus = curTime <= 0.0 ? Status.Success : Status.Running;
+			}
+		}
+
+		/// <summary>
+		/// WAIT waits X seconds, dynamic
+		/// </summary>
+		class NodeWaitDynamic : Node {
+			System.Func<double> waitTime;
+			double curTime;
+
+			public NodeWaitDynamic(BehaviourTree<T> tree, string name)
+				: base(tree, name ?? "wait") { }
+
+			internal NodeWaitDynamic(BehaviourTree<T> tree, string name, System.Func<double> waitTime)
+				: base(tree, name ?? "wait")
+				=> this.waitTime = waitTime;
+
+			internal override Node Clone(BehaviourTree<T> otherTree, Node parent) {
+				var clone = (NodeWaitDynamic)base.Clone(otherTree, parent);
+				clone.waitTime = waitTime;
+				return clone;
+			}
+
+			protected override void OnStart() {
+				curTime = waitTime();
 			}
 
 			protected override void OnTick() {
