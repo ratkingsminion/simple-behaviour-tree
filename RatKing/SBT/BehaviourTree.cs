@@ -21,7 +21,7 @@ namespace RatKing.SBT {
 			internal Node parent; // can be null, then it's at the root
 			internal Status curStatus = Status.Fail;
 			internal bool isProcessing;
-			internal int curTick;
+			internal int curTick = -1;
 
 			protected Node(BehaviourTree<T> tree, string name)
 				=> (this.tree, this.name, this.parent) = (tree, name, tree.processNodes.Count > 0 ? tree.processNodes[^1] : null);
@@ -199,8 +199,8 @@ namespace RatKing.SBT {
 		public void Reset() {
 			IsTicking = false;
 			tickProcessNodeIdx = 0;
-			foreach (var n in processNodes) { n.isProcessing = false; n.curTick = 0; n.curStatus = Status.Fail; }
-			foreach (var n in nodesToRemove) { n.isProcessing = false; n.curTick = 0; n.curStatus = Status.Fail; }
+			foreach (var n in processNodes) { n.isProcessing = false; n.curTick = -1; n.curStatus = Status.Fail; }
+			foreach (var n in nodesToRemove) { n.isProcessing = false; n.curTick = -1; n.curStatus = Status.Fail; }
 			processNodes.Clear();
 			nodesToRemove.Clear();
 		}
