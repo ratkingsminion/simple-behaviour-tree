@@ -355,12 +355,24 @@ namespace RatKing.SBT {
 		/// Returns Success when it finishes waiting a dynamic amount of time
 		/// </summary>
 		public BehaviourTree<T> Wait(System.Func<double> waitTime) =>
-			Register(new NodeWaitDynamic(this, null, waitTime));
+			Register(new NodeWaitDynamic(this, null, _ => waitTime()));
 
 		/// <summary>
 		/// Returns Success when it finishes waiting a dynamic amount of time
 		/// </summary>
 		public BehaviourTree<T> Wait(string name, System.Func<double> waitTime) =>
+			Register(new NodeWaitDynamic(this, name, _ => waitTime()));
+
+		/// <summary>
+		/// Returns Success when it finishes waiting a dynamic amount of time
+		/// </summary>
+		public BehaviourTree<T> Wait(System.Func<T, double> waitTime) =>
+			Register(new NodeWaitDynamic(this, null, waitTime));
+
+		/// <summary>
+		/// Returns Success when it finishes waiting a dynamic amount of time
+		/// </summary>
+		public BehaviourTree<T> Wait(string name, System.Func<T, double> waitTime) =>
 			Register(new NodeWaitDynamic(this, name, waitTime));
 
 		//
@@ -530,13 +542,13 @@ namespace RatKing.SBT {
 		/// WAIT waits X seconds, dynamic
 		/// </summary>
 		class NodeWaitDynamic : Node {
-			System.Func<double> waitTime;
+			System.Func<T, double> waitTime;
 			double curTime;
 
 			public NodeWaitDynamic(BehaviourTree<T> tree, string name)
 				: base(tree, name ?? "wait") { }
 
-			internal NodeWaitDynamic(BehaviourTree<T> tree, string name, System.Func<double> waitTime)
+			internal NodeWaitDynamic(BehaviourTree<T> tree, string name, System.Func<T, double> waitTime)
 				: base(tree, name ?? "wait")
 				=> this.waitTime = waitTime;
 
@@ -547,7 +559,7 @@ namespace RatKing.SBT {
 			}
 
 			protected override void OnStart() {
-				curTime = waitTime();
+				curTime = waitTime(tree.target);
 			}
 
 			protected override void OnTick() {
