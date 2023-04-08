@@ -14,7 +14,19 @@ namespace RatKing.SBT {
 		/// <summary>
 		/// Print a dynamic debug message
 		/// </summary>
+		public BehaviourTree<T> Print(System.Func<T, string> message)
+			=> Print((string)null, message);
+
+		/// <summary>
+		/// Print a dynamic debug message
+		/// </summary>
 		public BehaviourTree<T> Print(string name, System.Func<string> message) // offering a method with debug name can help with debugging via GenerateString()
+			=> Register(new NodePrintDynamic(this, name) { message = _ => message() });
+
+		/// <summary>
+		/// Print a dynamic debug message
+		/// </summary>
+		public BehaviourTree<T> Print(string name, System.Func<T, string> message) // offering a method with debug name can help with debugging via GenerateString()
 			=> Register(new NodePrintDynamic(this, name) { message = message });
 
 		/// <summary>
@@ -35,7 +47,7 @@ namespace RatKing.SBT {
 		/// PRINT a dynamic message
 		/// </summary>
 		public class NodePrintDynamic : Node {
-			internal System.Func<string> message;
+			internal System.Func<T, string> message;
 
 			// always declare the standard constructor of a Node
 			public NodePrintDynamic(BehaviourTree<T> tree, string name)
@@ -55,7 +67,7 @@ namespace RatKing.SBT {
 
 			// OnTick() is called every time the node 
 			protected override void OnTick() {
-				Debug.Log(message(), tree.target as Object);
+				Debug.Log(message(tree.target), tree.target as Object);
 				curStatus = Status.Success; // set the status here
 			}
 		}
