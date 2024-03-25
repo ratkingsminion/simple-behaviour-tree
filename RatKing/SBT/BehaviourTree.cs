@@ -1,3 +1,4 @@
+// #define SBT_OPTIMIZED
 using System.Collections.Generic;
 using System.IO;
 
@@ -19,7 +20,17 @@ namespace RatKing.SBT {
 			protected BehaviourTree<T> tree;
 			internal string name; // for debugging purposes
 			internal Node parent; // can be null, then it's at the root
+#if SBT_OPTIMIZED
 			internal Status curStatus = Status.Fail;
+#else
+			internal Status _curStatus = Status.Fail;
+			internal int lastChangeTick;
+
+			internal Status curStatus {
+				get { return _curStatus; }
+				set { _curStatus = value; lastChangeTick = tree.tickCounter; }
+			}
+#endif
 			internal bool isProcessing;
 			internal int curTick = -1;
 
@@ -84,8 +95,8 @@ namespace RatKing.SBT {
 		int tickCounter = 0;
 		event System.Action<string> LogError;
 
-		static string debugTab = new(' ', 1000);
-		static System.Text.StringBuilder debugSB = new();
+		static readonly string debugTab = new(' ', 1000);
+		static readonly System.Text.StringBuilder debugSB = new();
 
 		//
 
@@ -103,34 +114,39 @@ namespace RatKing.SBT {
 
 		//
 
-		public string GenerateString(bool richText = false, int tabWidth = 3, int rootIdx = 0) {
+		public string GenerateString(bool richText = false, int tabWidth = 3, int rootIdx = 0, int coloredAgeTicks = 30) {
 			debugSB.Clear();
-			void AddNode(Node node, int depth = 0, bool withTabs = true) {
+			void AddNode(Node node, bool richText, int depth = 0, int tabMul = 1) {
 				if (node == null) { return; }
-				var withColour = richText;
-				if (withColour) {
-					switch (node.curStatus) {
-						case Status.Success:
-						case Status.Fail: withColour = false; break;
-						case Status.Running: debugSB.Append("<color=#0f0>"); break;
-					}
+				if (tabWidth != 0) { debugSB.Append(debugTab, 0, depth * tabWidth * tabMul); }
+#if SBT_OPTIMIZED
+				var colored = richText && node.curStatus == Status.Running;
+				if (colored) {
+					debugSB.Append("<color=#ffff00>");
 				}
-				if (withTabs) { debugSB.Append(debugTab, 0, depth * tabWidth); }
+#else
+				var age = coloredAgeTicks > 0 ? System.Math.Clamp(tickCounter - node.lastChangeTick, 0, coloredAgeTicks) / (float)coloredAgeTicks : 1.0;
+				var colored = richText && node.curStatus != Status.Fail && age < 1.0;
+				if (colored) {
+					var lerp = ((int)(age * 0xff)).ToString("x2");
+					debugSB.Append("<color=#").Append(lerp).Append("ff").Append(lerp).Append(">");
+				}
+#endif
 				debugSB.Append(node.name);
-				if (withColour) { debugSB.Append("</color>"); }
+				if (colored) { debugSB.Append("</color>"); }
 
 				if (node is NodeDecorator nd) {
 					debugSB.Append(" . ");
-					AddNode(nd.child, depth, false);
+					AddNode(nd.child, richText, depth, 0);
 				}
 				else {
 					debugSB.AppendLine();
 					if (node is NodeComposite nc) {
-						foreach (var c in nc.children) { AddNode(c, depth + 1); }
+						foreach (var c in nc.children) { AddNode(c, richText, depth + 1); }
 					}
 				}
 			}
-			if (roots.Count - 1 >= rootIdx) { AddNode(roots[rootIdx]); }
+			if (roots.Count - 1 >= rootIdx) { AddNode(roots[rootIdx], richText); }
 			return debugSB.ToString();
 		}
 
