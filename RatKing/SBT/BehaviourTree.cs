@@ -266,7 +266,7 @@ namespace RatKing.SBT {
 					}
 				}
 
-				if (clonedRoot is NodeComposite) {
+				if (clonedRoot is NodeComposite || clonedRoot is NodeDecorator) {
 					processNodes.RemoveAt(processNodes.Count - 1);
 				}
 			}
